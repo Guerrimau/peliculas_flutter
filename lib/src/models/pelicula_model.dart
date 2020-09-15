@@ -80,4 +80,14 @@ class Pelicula {
     }
 
   }
+
+  getBackgroundImg() {
+
+    if( posterPath == null ) {
+      return 'https://www.hopkinsmedicine.org/-/media/feature/noimageavailable.ashx?h=260&la=en&mh=260&mw=380&w=380&hash=2DB962892F7CA0AF52946D569B87E5C58D1E1431';
+    } else {
+      return 'https://image.tmdb.org/t/p/w500/$backdropPath';
+    }
+
+  }
 }

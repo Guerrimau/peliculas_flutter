@@ -1,5 +1,7 @@
+
 import 'package:http/http.dart' as http;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:peliculas/src/models/pelicula_model.dart';
@@ -9,6 +11,34 @@ class PeliculasProvider {
   String _apiKey = '0ddd1b89f1973a6003c4bbe712a8f81c';
   String _url = 'api.themoviedb.org';
   String _languaje = 'es-ES';
+
+  int _popularesPage = 0 ;
+  bool _cargando = false;
+
+  List<Pelicula> _populares = new List();
+
+  final _popularesStreamController = StreamController<List<Pelicula>>.broadcast();
+
+  Function(List<Pelicula>) get popularesSink => _popularesStreamController.sink.add;
+
+  Stream<List<Pelicula>> get popularesStream => _popularesStreamController.stream;
+
+
+  //Aqui se cierran los Streams
+  void disposeStreams() {
+    _popularesStreamController?.close();
+  }
+
+  Future<List<Pelicula>> _procesarRespuesta( Uri url ) async {
+
+    final resp = await http.get(url);
+    final decodedData = json.decode(resp.body);
+    
+    final peliculas = new Peliculas.fromJsonList( decodedData['results'] );
+
+    return peliculas.items;
+
+  }
 
   Future<List<Pelicula>> getEnCines () async {
 
@@ -28,19 +58,25 @@ class PeliculasProvider {
 
   Future<List<Pelicula>> getPopulares () async {
 
+    if ( _cargando ) return [];
+
+    _cargando = true;
+    _popularesPage++;
+
     final url = Uri.https(_url, '3/movie/popular', {
       'api_key'  :  _apiKey,
-      'languaje' :  _languaje
+      'languaje' :  _languaje,
+      'page': _popularesPage.toString(),
     });
 
-    final resp = await http.get(url);
-    final decodedData = json.decode(resp.body);
-    
-    final peliculas = new Peliculas.fromJsonList( decodedData['results'] );
+    final resp = await _procesarRespuesta(url);
 
-    return peliculas.items;
+    _populares.addAll( resp );
+    popularesSink( _populares ); 
 
+    _cargando = false;
+
+    return resp;
   }
-
 
 }
