@@ -19,6 +19,9 @@ class Peliculas {
 //Comando Paste JSON as Code en el Ctrl + Shft + P
 
 class Pelicula {
+
+  String uniqueId;
+
   double popularity;
   int voteCount;
   bool video;
